@@ -11,6 +11,9 @@ import insert from table
 
 MAX_PARAM_DEPTH = 64
 
+-- RFC 6265 token characters, the set allowed in a cookie name
+COOKIE_NAME_PATTERN = "^[%w!#$%%&'*+%-%.%^_`|~]+$"
+
 get_time = (config) ->
   if ngx
     ngx.update_time!
@@ -174,7 +177,11 @@ class Request
       return unless next @cookies
 
       for k,v in pairs @cookies
-        cookie = "#{url.escape k}=#{url.escape v}"
+        -- Cookie names are RFC 6265 tokens. Only percent-encode a name that
+        -- contains characters outside the token set, otherwise `-` becomes
+        -- %2d and prefixes such as __Host- lose their meaning to the browser
+        name = if k\match COOKIE_NAME_PATTERN then k else url.escape k
+        cookie = "#{name}=#{url.escape v}"
         if extra = @app.cookie_attributes @, k, v
           cookie ..= "; " .. extra
 

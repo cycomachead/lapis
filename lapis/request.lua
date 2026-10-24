@@ -13,6 +13,7 @@ end
 local insert
 insert = table.insert
 local MAX_PARAM_DEPTH = 64
+local COOKIE_NAME_PATTERN = "^[%w!#$%%&'*+%-%.%^_`|~]+$"
 local get_time
 get_time = function(config)
   if ngx then
@@ -298,7 +299,13 @@ do
         return 
       end
       for k, v in pairs(self.cookies) do
-        local cookie = tostring(url.escape(k)) .. "=" .. tostring(url.escape(v))
+        local name
+        if k:match(COOKIE_NAME_PATTERN) then
+          name = k
+        else
+          name = url.escape(k)
+        end
+        local cookie = tostring(name) .. "=" .. tostring(url.escape(v))
         do
           local extra = self.app.cookie_attributes(self, k, v)
           if extra then

@@ -328,6 +328,11 @@ describe "lapis.request", ->
         cookie_attributes: => "Path=/; Secure; Domain=.leafo.net;"
         "/": => @cookies.world = 34
 
+      class CookieApp3 extends lapis.Application
+        layout: false
+        "/": => @cookies["__Host-session"] = "yes"
+        "/escaped": => @cookies["bad name"] = "yes"
+
       it "should write a cookie", ->
         _, _, h = simulate_request CookieApp, "/"
         assert.same "world=34; Path=/; HttpOnly", h["Set-Cookie"]
@@ -345,6 +350,14 @@ describe "lapis.request", ->
             'cow=one%20cool%20%3bcookie; Path=/; HttpOnly'
           }
         }
+
+      it "should write cookie name made of token characters verbatim", ->
+        _, _, h = simulate_request CookieApp3, "/"
+        assert.same "__Host-session=yes; Path=/; HttpOnly", h["Set-Cookie"]
+
+      it "should escape cookie name with characters outside the token set", ->
+        _, _, h = simulate_request CookieApp3, "/escaped"
+        assert.same "bad%20name=yes; Path=/; HttpOnly", h["Set-Cookie"]
 
       it "should write a cookie with cookie attributes", ->
         _, _, h = simulate_request CookieApp2, "/"
