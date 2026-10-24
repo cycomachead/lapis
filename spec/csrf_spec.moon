@@ -89,6 +89,20 @@ describe "lapis.csrf", ->
         }
       }
 
+    it "fails validation when param is not a string", ->
+      assert.same {
+        nil, "csrf: invalid token"
+      }, {
+        csrf.validate_token {
+          cookies: {
+            lapis_session_token: "blahblah"
+          }
+          params: {
+            csrf_token: { hello: "world" }
+          }
+        }
+      }
+
     it "fails validation when cookie isn't set", ->
       assert.same {
         nil

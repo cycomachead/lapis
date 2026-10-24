@@ -23,6 +23,8 @@ generate_token = (req, data) ->
 validate_token = (req, callback) ->
   token = req.params.csrf_token
   return nil, "missing csrf token" unless token
+  -- a nested param like csrf_token[x]=y arrives as a table
+  return nil, "csrf: invalid token" unless type(token) == "string"
 
   expected_key = req.cookies[cookie_name]
   return nil, "csrf: missing token cookie" unless expected_key

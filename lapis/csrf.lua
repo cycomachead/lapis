@@ -25,6 +25,9 @@ validate_token = function(req, callback)
   if not (token) then
     return nil, "missing csrf token"
   end
+  if not (type(token) == "string") then
+    return nil, "csrf: invalid token"
+  end
   local expected_key = req.cookies[cookie_name]
   if not (expected_key) then
     return nil, "csrf: missing token cookie"
